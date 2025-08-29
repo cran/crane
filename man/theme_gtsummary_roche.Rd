@@ -4,16 +4,23 @@
 \alias{theme_gtsummary_roche}
 \title{Roche Theme}
 \usage{
-theme_gtsummary_roche(set_theme = TRUE, font_size = NULL)
+theme_gtsummary_roche(
+  font_size = NULL,
+  print_engine = c("flextable", "gt", "kable", "kable_extra", "huxtable", "tibble"),
+  set_theme = TRUE
+)
 }
 \arguments{
-\item{set_theme}{(scalar \code{logical})\cr
-Logical indicating whether to set the theme. Default is \code{TRUE}.
-When \code{FALSE} the named list of theme elements is returned invisibly}
-
 \item{font_size}{(scalar \code{numeric})\cr
 Numeric font size for compact theme.
 Default is 13 for gt tables, and 8 for all other output types}
+
+\item{print_engine}{String indicating the print method. Must be one of
+\code{"gt"}, \code{"kable"}, \code{"kable_extra"}, \code{"flextable"}, \code{"tibble"}}
+
+\item{set_theme}{(scalar \code{logical})\cr
+Logical indicating whether to set the theme. Default is \code{TRUE}.
+When \code{FALSE} the named list of theme elements is returned invisibly}
 }
 \value{
 theme list
@@ -21,15 +28,27 @@ theme list
 \description{
 A gtsummary theme for Roche tables
 \itemize{
-\item Calls the \code{\link[gtsummary:theme_gtsummary]{gtsummary::theme_gtsummary_compact()}} theme.
+\item flextable- and gt-printed tables are styled with reduced padding and font size.
 \item Uses \code{label_roche_pvalue()} as the default formatting function for all p-values.
-\item Defaults to a mono-spaced font for gt tables.
+\item Uses \code{label_roche_percent()} as the default formatting function for all percent values.
+\item Font size defaults are 8 points for all the table by the footers that are 7 points.
+\item If flextable-printed, header text is always bold.
+\item Border defaults to \code{flextable::fp_border_default(width = 0.5)}.
+\item The \code{add_overall(col_label)} default value has been updated.
+\item The results from \code{gtsummary::tbl_hierarchical()} and \code{gtsummary::tbl_hierarchical_count()}
+are now post-processed with \code{gtsummary::remove_footnote_header()},
+\code{crane::modify_zero_recode()}, and \code{crane::modify_header_rm_md()}.
 }
 }
 \examples{
 theme_gtsummary_roche()
 
-tbl_demographics(gtsummary::trial, by = trt, include = c(age, grade))
+tbl_roche_summary(
+  trial,
+  by = trt,
+  include = c(age, grade),
+  nonmissing = "always"
+)
 
-gtsummary::reset_gtsummary_theme()
+reset_gtsummary_theme()
 }
