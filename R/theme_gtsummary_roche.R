@@ -6,7 +6,6 @@
 #' - Uses `label_roche_pvalue()` as the default formatting function for all p-values.
 #' - Uses `label_roche_percent()` as the default formatting function for all percent values.
 #' - Font size defaults are 8 points for all the table by the footers that are 7 points.
-#' - If flextable-printed, header text is always bold.
 #' - Border defaults to `flextable::fp_border_default(width = 0.5)`.
 #' - The `add_overall(col_label)` default value has been updated.
 #' - The results from `gtsummary::tbl_hierarchical()` and `gtsummary::tbl_hierarchical_count()`
@@ -43,19 +42,22 @@ theme_gtsummary_roche <- function(font_size = NULL,
   # Initialization with compact gt options -------------------------------------
   lst_theme <- list("pkgwide-str:theme_name" = "Roche")
 
+  # Specifying that no type interpretation will happen automatically -----------
+  lst_theme <- lst_theme |> append(list("assign_summary_type-arg:cat_threshold" = 0L))
+
   # updating with some pharma-specific bits ------------------------------------
   lst_theme <- lst_theme |>
     append(
       list(
         "tbl_summary-fn:percent_fun" = label_roche_percent(),
         "pkgwide-fn:pvalue_fun" = label_roche_pvalue(),
-        "add_overall.tbl_summary-arg:col_label" = "All Participants  \n(N = {gtsummary::style_number(N)})",
+        "add_overall.tbl_summary-arg:col_label" = "All Participants  \n(N = {style_roche_number(N)})",
         "pkgwide-str:print_engine" = print_engine,
         "tbl_hierarchical-fn:addnl-fn-to-run" =
           \(x) {
             gtsummary::remove_footnote_header(x) |>
               gtsummary::modify_header(
-                gtsummary::all_stat_cols() ~ "{level}  \n(N = {gtsummary::style_number(n)})"
+                gtsummary::all_stat_cols() ~ "{level}  \n(N = {style_roche_number(n)})"
               ) |>
               modify_zero_recode() |>
               modify_header_rm_md()
@@ -83,7 +85,6 @@ theme_gtsummary_roche <- function(font_size = NULL,
         valign = list( # valign only because it will append to to last commands
           rlang::expr(flextable::fontsize(size = !!((font_size %||% 8) - 1), part = "footer")), # second fontsize spec
           rlang::expr(flextable::border_outer(part = "header", border = !!border)), # second command from border
-          rlang::expr(flextable::bold(bold = TRUE, part = "header")),
           rlang::expr(flextable::valign(valign = "top", part = "all")),
           rlang::expr(flextable::font(fontname = "Arial", part = "all")),
           rlang::expr(flextable::padding(padding.top = 0, part = "all")),

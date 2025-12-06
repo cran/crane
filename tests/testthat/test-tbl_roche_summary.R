@@ -1,4 +1,4 @@
-skip_if_not(is_pkg_installed("withr"))
+skip_if_pkg_not_installed("withr")
 
 test_that("tbl_roche_summary() works", {
   expect_silent(
@@ -18,7 +18,6 @@ test_that("tbl_roche_summary() |> add_overall() works", {
       gtsummary::trial,
       by = trt,
       include = c(age, grade),
-      digits = list(grade = list(p = 1)),
       nonmissing = "no"
     ) |>
       add_overall() |>
@@ -29,10 +28,10 @@ test_that("tbl_roche_summary() |> add_overall() works", {
       include = c(age, grade),
       type = list(age = "continuous2"),
       statistic = list(age = c("{mean} ({sd})", "{median}", "{min} - {max}")),
-      digits = list(grade = list(p = 1)),
+      digits = list(grade = list(p = 1), age = list(mean = 1, sd = 1, median = 1)),
       missing = "no"
     ) |>
-      add_overall(col_label = "All Participants  \n(N = {gtsummary::style_number(N)})") |>
+      add_overall(col_label = "All Participants  \n(N = {style_roche_number(N)})") |>
       gtsummary::modify_header(label = "", all_stat_cols(FALSE) ~ "{level}  \n(N = {n})") |>
       modify_header_rm_md() |>
       as.data.frame()
@@ -81,4 +80,16 @@ test_that("tbl_roche_summary() recode counts for all NA column", {
       dplyr::last(),
     "0"
   )
+})
+
+test_that("tbl_roche_summary() digit estimation works", {
+  expect_silent(
+    tbl <-
+      gtsummary::trial |>
+      tbl_roche_summary(
+        by = trt,
+        include = c(age, marker, grade)
+      )
+  )
+  expect_snapshot(tbl |> as.data.frame())
 })

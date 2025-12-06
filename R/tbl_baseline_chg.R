@@ -72,26 +72,28 @@ tbl_baseline_chg <- function(data,
   # ---- Type and content checks ----
   check_data_frame(data)
   check_data_frame(denominator)
-  check_string(analysis_variable)
-  check_string(change_variable)
-  check_string(id)
-  check_string(visit)
-  check_string(visit_number)
-  check_scalar(baseline_level, message = "The {.arg baseline_level} must be a scalar (single value).")
-
-  # Allow `by` to be NULL or a string
-  check_scalar(by, allow_empty = TRUE, message = "The {.arg by} argument must select exactly one variable or none.")
-
-  # Check that `by` exists in data if not NULL
-  if (!is.null(by) && !by %in% names(data)) {
-    cli::cli_abort("The variable {.val {by}} specified in {.arg by} is not found in {.arg data}.")
-  }
+  check_string(baseline_level)
+  check_not_missing(id)
+  check_not_missing(visit)
+  check_not_missing(visit_number)
+  check_not_missing(analysis_variable)
+  check_not_missing(change_variable)
+  cards::process_selectors(
+    data,
+    by = {{ by }}, id = {{ id }}, visit = {{ visit }}, visit_number = {{ visit_number }},
+    analysis_variable = {{ analysis_variable }}, change_variable = {{ change_variable }}
+  )
+  check_scalar(by, allow_empty = TRUE)
+  check_scalar(id)
+  check_scalar(visit)
+  check_scalar(visit_number)
+  check_scalar(analysis_variable)
+  check_scalar(change_variable)
 
   # Check that `baseline_level` is one of the visit values
   if (!(baseline_level %in% data[[visit]])) {
     cli::cli_abort("The {.arg baseline_level} {.val {baseline_level}} is not found in the {.val {visit}} variable.")
   }
-  cards::process_selectors(data, visit = {{ visit }}, analysis_variable = {{ analysis_variable }}, change_variable = {{ change_variable }}, by = {{ by }}, visit_number = {{ visit_number }})
   tbl_baseline_inputs <- as.list(environment())
 
   # build summary table -----------------------------------------------------
@@ -169,7 +171,7 @@ tbl_baseline_chg <- function(data,
   # Merge tables together
   baseline_chg_tbl <-
     list(tbl_aval, tbl_chg) |>
-    gtsummary::tbl_merge(tab_spanner = FALSE) |>
+    gtsummary::tbl_merge(tab_spanner = FALSE, quiet = TRUE) |>
     gtsummary::modify_header(
       gtsummary::all_stat_cols() & ends_with("_1") ~ "Value at Visit",
       gtsummary::all_stat_cols() & ends_with("_2") ~ "Change from Baseline",
@@ -241,7 +243,7 @@ tbl_baseline_chg <- function(data,
 #' @rdname tbl_baseline_chg
 #' @export
 add_overall.tbl_baseline_chg <- function(x,
-                                         last = FALSE, col_label = "All Participants  \n(N = {gtsummary::style_number(n)})", ...) {
+                                         last = FALSE, col_label = "All Participants  \n(N = {style_roche_number(n)})", ...) {
   # check inputs ---------------------------------------------------------------
   set_cli_abort_call()
   check_dots_empty(call = get_cli_abort_call())
@@ -278,13 +280,15 @@ add_overall.tbl_baseline_chg <- function(x,
     gtsummary::tbl_merge(
       tbls = list(x, tbl_overall),
       tab_spanner = FALSE,
-      merge_vars = c("variable", "row_type", "var_label", "label0", "label")
+      merge_vars = c("variable", "row_type", "var_label", "label0", "label"),
+      quiet = TRUE
     )
   } else {
     gtsummary::tbl_merge(
       tbls = list(tbl_overall, x),
       tab_spanner = FALSE,
-      merge_vars = c("variable", "row_type", "var_label", "label0", "label")
+      merge_vars = c("variable", "row_type", "var_label", "label0", "label"),
+      quiet = TRUE
     )
   }
 

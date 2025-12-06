@@ -4,10 +4,15 @@
 #' - `label_roche_pvalue()` returns formatted p-values.
 #' - `label_roche_percent()` returns formatted percent values. This function only formats percentages between 0 and 1.
 #' - `label_roche_ratio()` returns formatted ratios with values below and above a threshold being returned as `< 0.1` and `> 999.9`, for example, when `digits=1`.
+#' - `label_roche_number()` returns formatted numbers.
 #'
 #' @return A character vector of rounded p-values
 #' @inheritParams gtsummary::style_number
 #' @inheritParams gtsummary::style_pvalue
+#' @param na,inf,nan (`NA`/`string`)\cr
+#'   scalar to replace `NA`, infinite, and `NaN` values with.
+#'   Default is `"NE"` for arguments `na`, `inf`, and `nan` argument.
+#'
 #' @examples
 #' # p-value formatting
 #' x <- c(0.0000001, 0.123456)
@@ -26,6 +31,12 @@
 #'
 #' style_roche_ratio(x)
 #' label_roche_ratio()(x)
+#'
+#' # number formatting
+#' x <- c(0.0008, 0.8234, 2.123, 1000, NA, Inf, -Inf)
+#'
+#' style_roche_number(x)
+#' label_roche_number()(x)
 #' @name label_roche
 NULL
 
@@ -40,8 +51,8 @@ style_roche_pvalue <- function(x,
     x > 1 + 1e-15 ~ NA_character_,
     x < 0 - 1e-15 ~ NA_character_,
     x < 0.0001 ~
-      paste0("<", gtsummary::style_number(0.0001, digits = 4, big.mark = big.mark, decimal.mark = decimal.mark, ...)),
-    .default = gtsummary::style_number(x, digits = 4, big.mark = big.mark, decimal.mark = decimal.mark, ...)
+      paste0("<", style_roche_number(0.0001, digits = 4, big.mark = big.mark, decimal.mark = decimal.mark, ...)),
+    .default = style_roche_number(x, digits = 4, big.mark = big.mark, decimal.mark = decimal.mark, ...)
   )
 }
 
@@ -65,12 +76,12 @@ style_roche_percent <- function(x,
                                 ...) {
   dplyr::case_when(
     is.na(x) ~ NA_character_,
-    abs(x - 1) < sqrt(.Machine$double.eps) ~ gtsummary::style_number(1, scale = 100, digits = digits - 1, big.mark = big.mark, decimal.mark = decimal.mark, suffix = suffix, ...),
-    x > 0.999 & x < 1 ~ gtsummary::style_number(0.999, scale = 100, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark, prefix = ">", suffix = suffix, ...),
-    x < 0.001 & x > 0 ~ gtsummary::style_number(0.001, scale = 100, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark, prefix = "<", suffix = suffix, ...),
-    abs(x - 0) < sqrt(.Machine$double.eps) ~ gtsummary::style_number(0.0, scale = 100, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark, suffix = suffix, ...),
+    abs(x - 1) < sqrt(.Machine$double.eps) ~ style_roche_number(1, scale = 100, digits = digits - 1, big.mark = big.mark, decimal.mark = decimal.mark, suffix = suffix, ...),
+    x > 0.999 & x < 1 ~ style_roche_number(0.999, scale = 100, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark, prefix = ">", suffix = suffix, ...),
+    x < 0.001 & x > 0 ~ style_roche_number(0.001, scale = 100, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark, prefix = "<", suffix = suffix, ...),
+    abs(x - 0) < sqrt(.Machine$double.eps) ~ style_roche_number(0.0, scale = 100, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark, suffix = suffix, ...),
     x < 0 | x > 1 ~ NA_character_,
-    TRUE ~ gtsummary::style_number(
+    TRUE ~ style_roche_number(
       x,
       scale = 100,
       digits = digits,
@@ -154,4 +165,45 @@ label_roche_ratio <- function(digits = 2,
                               decimal.mark = getOption("OutDec"),
                               ...) {
   function(x) style_roche_ratio(x, prefix = prefix, suffix = suffix, big.mark = big.mark, decimal.mark = decimal.mark, digits = digits, ...)
+}
+
+#' @export
+#' @rdname label_roche
+style_roche_number <- function(x,
+                               digits = 0,
+                               big.mark = ifelse(decimal.mark == ",", " ", ","),
+                               decimal.mark = getOption("OutDec"),
+                               scale = 1,
+                               prefix = "",
+                               suffix = "",
+                               na = "NE",
+                               inf = "NE",
+                               nan = "NE",
+                               ...) {
+  set_cli_abort_call()
+
+  ret <- gtsummary::style_number(
+    x = x, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark,
+    scale = scale, prefix = prefix, suffix = suffix, na = na, ...
+  )
+
+  ret[is.infinite(x)] <- inf
+  ret[is.nan(x)] <- nan
+
+  ret
+}
+
+#' @export
+#' @rdname label_roche
+label_roche_number <- function(digits = 0,
+                               big.mark = ifelse(decimal.mark == ",", " ", ","),
+                               decimal.mark = getOption("OutDec"),
+                               scale = 1,
+                               prefix = "",
+                               suffix = "",
+                               na = "NE",
+                               inf = "NE",
+                               nan = "NE",
+                               ...) {
+  function(x) style_roche_number(x, digits = digits, big.mark = big.mark, decimal.mark = decimal.mark, scale = scale, prefix = prefix, suffix = suffix, na = na, inf = inf, nan = nan, ...)
 }

@@ -1,3 +1,25 @@
+# crane 0.3.0
+
+## New Functions and Functionality
+
+* Added `tbl_null_report()` for cases without any information to display. (#11)
+
+* Added functions `style_roche_number()` and `label_roche_number()` to replace their respective gtsummary versions, with additional `inf` argument for customization of `Inf`/`-Inf`/`NaN` values.
+
+* Added `list("assign_summary_type-arg:cat_threshold" = 0L)` to `theme_gtsummary_roche()`. Numeric variables with few levels will no longer default to summary type `'categorical'` in `gtsummary::tbl_summary()` and `tbl_roche_summary()`. (#79)
+
+### Other Updates
+
+* Updated variable processing in `tbl_baseline_chg()` to allow for non-string input. (#114)
+
+* Updated details about the `sort_hierarchical()` and `filter_hierarchical()` functions in the hierarchical tables article. (#116)
+
+* Added the `label` argument to `tbl_hierarchical_rate_and_count()` to set hierarchy variables labels in the table header. (#118)
+
+### Bug Fixes
+
+* Fixed `remove_duplicate_keys()` to remove non-unique column values when the key columns are a mix of unique and duplicated entries. (#129)
+
 # crane 0.2.0
 
 ## New Functions and Functionality

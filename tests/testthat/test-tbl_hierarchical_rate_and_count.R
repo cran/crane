@@ -13,7 +13,8 @@ test_that("tbl_hierarchical_rate_and_count() works", {
       tbl_hierarchical_rate_and_count(
         denominator = cards::ADSL,
         by = TRTA,
-        variables = c(AEBODSYS, AEDECOD)
+        variables = c(AEBODSYS, AEDECOD),
+        label = AEDECOD ~ "MedDRA Preferred Term"
       ) |>
       add_overall(last = TRUE)
   )
@@ -25,6 +26,12 @@ test_that("tbl_hierarchical_rate_and_count() works", {
       "Total number of participants with at least one adverse event",
       "Overall total number of events"
     )
+  )
+
+  # check the header label is correct
+  expect_equal(
+    tbl$table_styling$header$label[6],
+    "Body System or Organ Class  \n\U00A0\U00A0\U00A0\U00A0MedDRA Preferred Term"
   )
 
   # snapshot of the table
@@ -84,7 +91,7 @@ test_that("tbl_hierarchical_rate_and_count() digits styling defaults to gtsummar
         denominator = cards::ADSL,
         by = TRTA,
         digits = everything() ~ list(
-          n = label_style_number(),
+          n = label_roche_number(),
           p = label_roche_percent(digits = 1)
         ),
         variables = c(AEBODSYS, AEDECOD)

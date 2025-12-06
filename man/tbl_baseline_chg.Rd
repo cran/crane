@@ -21,7 +21,7 @@ tbl_baseline_chg(
 \method{add_overall}{tbl_baseline_chg}(
   x,
   last = FALSE,
-  col_label = "All Participants  \\n(N = {gtsummary::style_number(n)})",
+  col_label = "All Participants  \\n(N = {style_roche_number(n)})",
   ...
 )
 }
@@ -81,7 +81,7 @@ Typical use is tabulating changes from baseline
 measurement of an Analysis Variable.
 }
 \examples{
-\dontshow{if (identical(Sys.getenv("NOT_CRAN"), "true") || identical(Sys.getenv("IN_PKGDOWN"), "true")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (identical(Sys.getenv("NOT_CRAN"), "true") || identical(Sys.getenv("IN_PKGDOWN"), "true")) withAutoprint(\{ # examplesIf}
 theme_gtsummary_roche()
 
 df <- cards::ADLB |>

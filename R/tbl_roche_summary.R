@@ -54,7 +54,7 @@ tbl_roche_summary <- function(data,
   # execute `tbl_summary()` code with theme/defaults ---------------------------
   x <-
     gtsummary::with_gtsummary_theme(
-      x = tbl_roche_summary_theme,
+      x = tbl_roche_summary_theme(data, {{ include }}),
       expr =
         gtsummary::tbl_summary(
           data = data,
@@ -92,9 +92,11 @@ tbl_roche_summary <- function(data,
     gtsummary::modify_table_body(
       function(.x) {
         .x |>
-          dplyr::mutate(
-            .by = "variable",
-            dplyr::across(dplyr::everything(), ~ .[order(row_type != "label", row_type != "missing")])
+          dplyr::arrange(
+            # retain variable order (arrange() forces alphanumeric sorting)
+            match(.data$variable, unique(.data$variable)),
+            .data$row_type != "label", # first
+            .data$row_type != "missing" # second
           )
       }
     ) |>
@@ -119,4 +121,9 @@ tbl_roche_summary <- function(data,
 }
 
 # creating theme for tbl_roche_summary summaries -------------------------------
-tbl_roche_summary_theme <- list("tbl_summary-str:default_con_type" = "continuous2")
+tbl_roche_summary_theme <- function(data, include) {
+  list(
+    "tbl_summary-str:default_con_type" = "continuous2",
+    "tbl_summary-arg:digits" = .guess_roche_summary_digits(data, {{ include }})
+  )
+}
